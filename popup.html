@@ -1,0 +1,176 @@
+<html>
+<head>
+<title>Follow Links Download</title>
+<link rel="stylesheet" type="text/css" href="main.css">
+<script src="lib/jquery-1.4.3.min.js"></script>
+<script src="lib/jit-yc.js"></script>
+<script src="helpers.js"></script>
+
+<script type="text/javascript">
+
+var currentTab = "Queued";
+var refreshNeeded = true;
+var refreshTimerInterval = 2000;
+var refreshTimer = setTimeout("refreshPage()",refreshTimerInterval);
+var bgPage = chrome.extension.getBackgroundPage();
+
+function onLoad() 
+{	
+	var u = bgPage.crawlStartURL;
+	if(!u || u=="") { chrome.tabs.getSelected(null,function(tab) { $("#crawUrl").val(tab.url); }); }
+	else { $("#crawUrl").val(u); }
+	refreshPage();
+}	
+
+$(window).unload(function() 
+{
+	if(bgPage.settings.pauseOnPopClose==1)
+	{
+		if(bgPage.appState=="crawling")
+		{
+			console.log("Popup Closing Pausing Crawl");
+			stopCrawl();	
+		}
+	}
+});
+
+//function refreshPage(force) { refreshNeeded = true; if(force){onRefreshTick();} }	
+//function refreshPage(force) { onRefreshTick(); }	
+
+function refreshPage() 
+{
+	// Start the timer again
+	clearTimeout(refreshTimer);
+	refreshTimer = setTimeout("refreshPage()",refreshTimerInterval);
+		
+	// First clear everything out
+	$("#tabs li").remove();
+	$("#urlsBeingSearched li").remove();
+			
+	// Build each tab
+	$(bgPage.tabs).each(function()
+	{
+		var innerTxt = this+" ("+bgPage.getURLsInTab(this).length+")";
+		var liTxt = this==currentTab?innerTxt:"<a href='#' onClick=\"openTab('"+this+"'); return false;\" >"+innerTxt+"</a>";
+		$("#tabs").append("<li>"+liTxt+"</li>");
+	});
+	
+	// Set button text
+	if(bgPage.appState=="stopped" && bgPage.getURLsInTab("Queued").length>0) {	$("#crawlButton").val("Resume"); }
+	else if(bgPage.appState=="stopped" && bgPage.getURLsInTab("Queued").length==0) { $("#crawlButton").val("Crawl"); }
+	else if(bgPage.appState=="crawling") { $("#crawlButton").val("Pause");  }
+	
+	// Set enabledness
+	if(bgPage.appState=="crawling"){ $("#crawUrl").attr("disabled", true); $("#resetButton").attr("disabled", true); }
+	else { $("#crawUrl").attr("disabled", false); $("#resetButton").attr("disabled", false);}
+		
+	if(currentTab=="X")
+	{
+		//$("#infovis").empty();
+		//renderGraph();
+	}
+	else
+	{		
+		// List all the urls on this tab
+		$(bgPage.getURLsInTab(currentTab)).each(function()
+		{
+			$("#urlsBeingSearched").append("<li><a href='#' onClick='onLIURLClicked(\""+this.url+"\"); return false'>"+this.url+"</a></li>");
+		});
+		
+		
+		$("#urlsBeingSearched li:even").css("background-color", "#f8f8f8");
+	
+	}
+	
+	// If we are done then stop the crawl now
+	if(bgPage.appState=="crawling" && bgPage.getURLsInTab("Crawling").length==0 && bgPage.getURLsInTab("Queued").length==0){ stopCrawl(); }
+}
+
+
+
+function onLIURLClicked(url)
+{
+	//document.execCommand('SaveAs',null,filename)
+	chrome.tabs.create({url:url, selected:false});
+}
+
+function openTab(tab) 
+{
+	 currentTab = tab;
+	 refreshPage();
+}
+
+function onCrawlClicked()
+{
+	if(bgPage.appState=="stopped" && bgPage.getURLsInTab("Queued").length>0)
+	{
+		console.log("Resuming Crawl");	
+		bgPage.appState="crawling";
+		bgPage.crawlMore();
+	}
+	else if(bgPage.appState=="stopped" && bgPage.getURLsInTab("Queued").length==0)
+	{
+		console.log("Beginning Crawl");
+		bgPage.beginCrawl($("#crawUrl").val());
+	}
+	else if(bgPage.appState=="crawling")
+	{
+		console.log("Pausing Crawl");
+		stopCrawl();		
+	}
+	refreshPage();
+}
+
+function onResetClicked()
+{
+	stopCrawl();
+	bgPage.reset();
+	chrome.tabs.getSelected(null,function(tab) { $("#crawUrl").val(tab.url); })
+	refreshPage();
+}
+
+function stopCrawl()
+{
+	bgPage.appState = "stopped";
+	$("#crawUrl").attr("disabled", false);
+	$("#crawlButton").val(bgPage.getURLsInTab("Queued").length==0?"Crawl":"Resume");	
+	
+	for(var ref in bgPage.allPages) 
+	{
+		var o = bgPage.allPages[ref]
+		if(o.state=="crawling")
+		{			
+			o.request.abort(); 
+			delete o.request; 
+			console.log("AJAX page load aborted -> "+JSON.stringify(o));
+			o.state = "queued";
+		}
+	}
+	
+	refreshPage();
+}
+
+</script>
+</head>
+
+<body onLoad="onLoad()">
+	
+    <div id="content">
+    
+    	<img src="images/icon58.png" id="icon" />
+    
+    	<div id="crawlURLAndButton">
+            <input id="crawUrl" type="text" size="44" /> 
+            <input id="crawlButton" type="button" value="Crawl" onClick="onCrawlClicked()" />   
+            <input id="resetButton" type="button" value="Reset" onClick="onResetClicked()" />
+        </div> 
+        
+        <div id="tabsContainer">
+       		<ul id="tabs" />      
+        </div>
+       
+        <ul id="urlsBeingSearched" />           
+    
+    </div>
+    
+</body>

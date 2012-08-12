@@ -1,0 +1,17 @@
+{
+   "browser_action": 
+   {
+      "default_icon": "images/icon48.png",
+      "popup": "popup.html"
+   },
+   "background_page": "background.html",
+   "description": "Crawl a url for interesting links!",
+   "icons": {
+      "48": "images/icon48.png"
+   },
+  
+   "name": "Chrome Crawler",
+   "options_page": "options.html",
+   "permissions": [ "tabs", "http://*/*", "https://*/*" ],   
+   "version": "0.6"
+}

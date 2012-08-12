@@ -1,0 +1,79 @@
+@charset "utf-8";
+/* CSS Document */
+
+body 
+{
+	color: #1E1E1E;
+	font: normal normal normal 0.75em/1.73em Verdana, Arial, Geneva, Helvetica, sans-serif;
+	overflow-x: hidden;
+}
+
+#content
+{
+	width: 500px;
+	height: 400px;
+}
+
+#tabsContainer
+{
+	background:#ebeff9;
+	border-top:1px solid #b5c7de;
+	font-size:99%;
+	padding:3px 0 2px 5px;
+	font-weight:bold;
+	margin-bottom:1em;
+	margin-top:1em;
+	text-align:center;
+}
+
+#tabs
+{
+	padding: 0px;
+	margin:0px;
+}
+
+#tabs li
+{
+	display: inline;
+	list-style-type: none;
+	padding-right: 10px;
+}
+
+#urlsBeingSearched
+{
+	padding: 0px;
+}
+
+#urlsBeingSearched li
+{
+	list-style-type: none;
+}
+
+#crawlURLAndButton
+{
+	padding-left:65px;
+	padding-top: 5px;
+}
+
+#icon
+{	
+	 position:absolute;
+	 top: 0px; 
+	 left: 0x; 
+	 z-index: 10;
+}
+
+#infovis-container {
+    position:absolute;
+    top: 80px;
+	left: 10px;
+}
+
+#infovis {
+    position:relative;
+    width:490px;
+    height:325px;
+    margin:auto;
+    overflow:hidden;
+}
+

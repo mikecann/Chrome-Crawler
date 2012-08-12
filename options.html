@@ -1,0 +1,60 @@
+<html>
+<head>
+<title>Chrome Crawler | Options</title>
+<script src="lib/jquery-1.4.3.min.js"></script>
+<script type="text/javascript">
+
+var bgPage = chrome.extension.getBackgroundPage();
+
+// Saves options to localStorage.
+function save_options() 
+{ 
+	bgPage.settings.maxSimultaniousCrawls = $("#max-page-loads").val();
+	bgPage.settings.maxDepth = $("#max-crawl-depth").val();
+	bgPage.settings.interestingFileTypes = $("#interesting-file-types").val();
+	bgPage.settings.pauseOnPopClose = $("#pause-crawl-popup-close").is(':checked')?1:0;
+}
+
+// Restores select box state to saved value from localStorage.
+function restore_options() 
+{	
+	bgPage = chrome.extension.getBackgroundPage();	
+	$("#max-page-loads").val(bgPage.settings.maxSimultaniousCrawls);
+	$("#max-crawl-depth").val(bgPage.settings.maxDepth);
+	$("#interesting-file-types").val(bgPage.settings.interestingFileTypes);
+	if(bgPage.settings.pauseOnPopClose==1){$("#pause-crawl-popup-close").attr('checked','checked');}
+}
+
+</script>
+<link rel="stylesheet" href="options.css" type="text/css"/>
+</head>
+<body onLoad="restore_options()">
+<div id="header">
+  <h1>Chrome Crawler Options</h1>
+</div>
+<div class="section-header first"><em>Customise your crawler below:</em></div>
+<br >
+<p> <span class="desc-text">Maximum Simultanious Page Requests:<span><br/>
+  <input type="text" id="max-page-loads" size="5">
+  <br >
+  <br >
+  <span class="desc-text">Maximum Crawl Depth:<span><br/>
+  <input type="text" id="max-crawl-depth" size="5">
+  <br >
+  <br >
+  <span class="desc-text">Interesting File Types:<span><br/>
+  <input type="text" id="interesting-file-types" size="40">
+  <br >
+  <br >
+  <input type="checkbox" id="pause-crawl-popup-close"/>
+  Pause crawling when popup closes<br >
+  <br >
+  <br >
+  <button id="save-button" style="font-weight:bold" onClick="save_options()">Save</button>
+</p>
+<div id="saved-txt" style="display: none">Options Saved!</div>
+<div class="fix"></div>
+<div id="footer"> <em>Created by <a href="http://www.mikecann.co.uk">Michael Cann, 2010</a>.  mike.cann@gmail.com</em><br />
+</div>
+</body>
+</html>
